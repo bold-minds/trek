@@ -1,0 +1,10 @@
+# Compiled binaries
+/cli/cli
+/server/trekd
+/examples/demo-shop/shop
+
+# Go build cache
+*.test
+
+# OS artifacts
+.DS_Store

@@ -83,8 +83,8 @@ func TestConformance(t *testing.T) {
 }
 
 func loadFixtures() ([]Fixture, error) {
-	// Try local fixtures first (relative to trek-spec in workspace)
-	localPath := "../trek-spec/fixtures/v1.json"
+	// Try local fixtures first (relative to spec/ in monorepo)
+	localPath := "./spec/fixtures/v1.json"
 	body, err := os.ReadFile(localPath)
 	if err == nil {
 		var fixtures []Fixture
