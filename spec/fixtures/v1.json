@@ -1,0 +1,700 @@
+[
+  {
+    "name": "match user_id elevates to debug",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {
+          "max_debug_events_per_request": 200,
+          "max_debug_events_per_session": 5000
+        },
+        "labels": {
+          "case": "user-debug"
+        },
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {
+        "case": "user-debug"
+      }
+    }
+  },
+  {
+    "name": "no match when user_id differs",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u999",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  },
+  {
+    "name": "expired session does not match",
+    "now": "2026-01-01T00:15:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "EXPIRED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "match tenant_id",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "tenant_id": "t1"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "match request_id",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "req-abc-123",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "request_id": "req-abc-123"
+        },
+        "level": "trace",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "trace",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "match route exact",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "route": "/api/orders"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "match route prefix with wildcard",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders/123/items",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "route": "/api/orders*"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "route prefix does not match different path",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/users/123",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "route": "/api/orders*"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  },
+  {
+    "name": "match custom field",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u456",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {
+        "plan": "enterprise",
+        "region": "us-west"
+      }
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "custom": {
+            "plan": "enterprise"
+          }
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "AND semantics - all selector fields must match",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123",
+          "route": "/api/users"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  },
+  {
+    "name": "AND semantics - both fields match",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123",
+          "route": "/api/orders"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "tie-break by level - trace wins over debug",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "no"
+        },
+        "service_scope": null
+      },
+      {
+        "id": "s2",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "trace",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "yes"
+        },
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s2",
+      "effective_level": "trace",
+      "reason_code": "MATCHED",
+      "labels": {
+        "winner": "yes"
+      }
+    }
+  },
+  {
+    "name": "tie-break by specificity - more fields wins",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "no"
+        },
+        "service_scope": null
+      },
+      {
+        "id": "s2",
+        "selector": {
+          "user_id": "u123",
+          "route": "/api/orders"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "yes"
+        },
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s2",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {
+        "winner": "yes"
+      }
+    }
+  },
+  {
+    "name": "tie-break by expiration - earlier expiry wins",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:30:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "no"
+        },
+        "service_scope": null
+      },
+      {
+        "id": "s2",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "yes"
+        },
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s2",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {
+        "winner": "yes"
+      }
+    }
+  },
+  {
+    "name": "tie-break by session_id - lexicographic smallest wins",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s_beta",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "no"
+        },
+        "service_scope": null
+      },
+      {
+        "id": "s_alpha",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {
+          "winner": "yes"
+        },
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s_alpha",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {
+        "winner": "yes"
+      }
+    }
+  },
+  {
+    "name": "service_scope filters - session applies",
+    "now": "2026-01-01T00:00:00Z",
+    "service_name": "api",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": ["api", "worker"]
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "service_scope filters - session does not apply",
+    "now": "2026-01-01T00:00:00Z",
+    "service_name": "billing",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": ["api", "worker"]
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  },
+  {
+    "name": "service_scope null means all services",
+    "now": "2026-01-01T00:00:00Z",
+    "service_name": "any-service",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "user_id": "u123"
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": true,
+      "session_id": "s1",
+      "effective_level": "debug",
+      "reason_code": "MATCHED",
+      "labels": {}
+    }
+  },
+  {
+    "name": "no sessions returns no match",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {}
+    },
+    "sessions": [],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  },
+  {
+    "name": "custom field must match exactly",
+    "now": "2026-01-01T00:00:00Z",
+    "request_context": {
+      "user_id": "u123",
+      "request_id": "r1",
+      "tenant_id": "t1",
+      "route": "/api/orders",
+      "custom": {
+        "plan": "pro"
+      }
+    },
+    "sessions": [
+      {
+        "id": "s1",
+        "selector": {
+          "custom": {
+            "plan": "enterprise"
+          }
+        },
+        "level": "debug",
+        "expires_at": "2026-01-01T00:10:00Z",
+        "caps": {},
+        "labels": {},
+        "service_scope": null
+      }
+    ],
+    "expected": {
+      "matched": false,
+      "session_id": null,
+      "effective_level": "info",
+      "reason_code": "NO_MATCH",
+      "labels": {}
+    }
+  }
+]
