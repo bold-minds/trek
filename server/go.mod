@@ -5,7 +5,7 @@ go 1.25
 require (
 	github.com/alicebob/miniredis/v2 v2.35.0
 	github.com/bold-minds/trek v0.0.0
-	github.com/gofiber/fiber/v2 v2.52.10
+	github.com/gofiber/fiber/v2 v2.52.13
 	github.com/jackc/pgx/v5 v5.8.0
 	github.com/redis/go-redis/v9 v9.17.2
 	github.com/rs/zerolog v1.34.0
